@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Favicon Switcher – Options</title>
+    <link rel="stylesheet" href="./options.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Favicon Switcher – Manage Rules</h1>
+      <div class="toolbar">
+        <button id="exportBtn">Export</button>
+        <button id="importBtn">Import</button>
+        <input type="file" id="importFile" accept="application/json" hidden />
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Match</th>
+            <th>Favicon</th>
+            <th>Enabled</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rulesBody"></tbody>
+      </table>
+      <div id="message" class="message"></div>
+    </div>
+    <script type="module" src="./options.js"></script>
+  </body>
+</html>

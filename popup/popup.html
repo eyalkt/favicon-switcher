@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Favicon Switcher</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="topbar">
+        <h1>Favicon Switcher</h1>
+        <button id="manageBtn" class="secondary">Manage</button>
+      </div>
+      <div id="context" class="context"></div>
+
+      <div class="card">
+        <div class="row">
+          <label>Scope</label>
+          <div class="scope">
+            <label
+              ><input
+                type="radio"
+                name="scope"
+                value="domain"
+                checked
+              />Domain</label
+            >
+            <label
+              ><input type="radio" name="scope" value="pattern" />URL
+              Pattern</label
+            >
+          </div>
+        </div>
+        <div class="row" id="domainRow">
+          <label>Domain</label>
+          <input type="text" id="domainInput" readonly />
+        </div>
+        <div class="row hidden" id="patternRow">
+          <label>Pattern</label>
+          <input
+            type="text"
+            id="patternInput"
+            placeholder="e.g. https://*.dev.example.com/*"
+          />
+        </div>
+        <div class="row">
+          <label>Favicon URL</label>
+          <input
+            type="url"
+            id="faviconUrlInput"
+            placeholder="https://.../favicon.png"
+          />
+        </div>
+        <div class="row preview">
+          <img id="faviconPreview" alt="preview" />
+        </div>
+        <div class="actions">
+          <div class="left-actions">
+            <button id="saveBtn">Save</button>
+            <button id="deleteBtn" class="secondary">Delete</button>
+          </div>
+          <div class="right-actions">
+            <label class="switch">
+              <input type="checkbox" id="enabledSwitch" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        <div id="message" class="message"></div>
+      </div>
+    </div>
+    <script type="module" src="./popup.js"></script>
+  </body>
+</html>
