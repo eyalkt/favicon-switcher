@@ -8,9 +8,11 @@ h1 { font-size: 14px; margin: 0; color: var(--fg); }
 .context { font-size: 12px; color: var(--muted); }
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .row { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 8px; }
+.row.single { grid-template-columns: 1fr; }
+.row.single .scope { justify-content: center; }
 .row label { color: var(--muted); }
 .row input[type="text"], .row input[type="url"] { width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: #0f1113; color: var(--fg); }
-.scope { display: flex; gap: 8px; }
+.scope { display: flex; gap: 8px; align-items: center; }
 .hidden { display: none; }
 .preview { display: flex; justify-content: center; align-items: center; height: 36px; }
 .preview img { width: 24px; height: 24px; border-radius: 4px; border: 1px solid var(--border); background: #0f1113; object-fit: contain; display: none; }
@@ -30,4 +32,10 @@ a { color: var(--muted); text-decoration: none; }
 .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .2s; border-radius: 50%; }
 .switch input:checked + .slider { background-color: var(--acc); }
 .switch input:checked + .slider:before { transform: translateX(16px); }
+
+/* Existing grid */
+.existing-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.existing-item { width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border); background: #0f1113; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.existing-item img { width: 20px; height: 20px; border-radius: 3px; object-fit: contain; }
+.existing-item.selected { outline: 2px solid var(--acc); outline-offset: 1px; }
 

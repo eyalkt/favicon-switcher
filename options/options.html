@@ -28,6 +28,76 @@
       </table>
       <div id="message" class="message"></div>
     </div>
+
+    <div id="editModal" class="modal hidden">
+      <div class="dialog">
+        <div class="dialog-header">
+          <h2>Edit Favicon Rule</h2>
+        </div>
+        <div class="dialog-body">
+          <div class="form-row">
+            <label>Type</label>
+            <div class="controls">
+              <label
+                ><input
+                  type="radio"
+                  name="editType"
+                  value="domain"
+                />Domain</label
+              >
+              <label
+                ><input type="radio" name="editType" value="pattern" />URL
+                Pattern</label
+              >
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Match</label>
+            <input type="text" id="editValue" />
+          </div>
+          <div class="form-row">
+            <label>Source</label>
+            <div class="controls">
+              <label
+                ><input
+                  type="radio"
+                  name="editSource"
+                  value="random"
+                  checked
+                />Random</label
+              >
+              <label
+                ><input type="radio" name="editSource" value="url" />URL</label
+              >
+            </div>
+          </div>
+          <div class="form-row single" id="editUrlRow">
+            <input
+              type="url"
+              id="editUrlInput"
+              placeholder="https://.../favicon.png"
+            />
+          </div>
+          <div class="form-row single hidden" id="editRandomRow">
+            <div class="controls center">
+              <button id="editGenerateBtn" class="secondary">Generate</button>
+            </div>
+          </div>
+          <div class="form-row center">
+            <img id="editPreview" class="icon" />
+          </div>
+          <div class="form-row">
+            <label>Enabled</label>
+            <input type="checkbox" id="editEnabled" />
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button id="editSaveBtn">Save</button>
+          <button id="editCancelBtn" class="secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="./options.js"></script>
   </body>
 </html>

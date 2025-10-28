@@ -44,14 +44,47 @@
             placeholder="e.g. https://*.dev.example.com/*"
           />
         </div>
+
         <div class="row">
-          <label>Favicon URL</label>
+          <label>Source</label>
+          <div class="scope">
+            <label
+              ><input
+                type="radio"
+                name="source"
+                value="random"
+                checked
+              />Random</label
+            >
+            <label><input type="radio" name="source" value="url" />URL</label>
+            <label
+              ><input
+                type="radio"
+                name="source"
+                value="existing"
+              />Existing</label
+            >
+          </div>
+        </div>
+
+        <div class="row single" id="urlRow">
           <input
             type="url"
             id="faviconUrlInput"
             placeholder="https://.../favicon.png"
           />
         </div>
+
+        <div class="row single hidden" id="randomRow">
+          <div class="scope">
+            <button id="generateBtn" class="secondary">Generate</button>
+          </div>
+        </div>
+
+        <div class="row single hidden" id="existingRow">
+          <div id="existingGrid" class="existing-grid"></div>
+        </div>
+
         <div class="row preview">
           <img id="faviconPreview" alt="preview" />
         </div>

@@ -16,3 +16,19 @@ img.icon { width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(
 .toggle { cursor: pointer; }
 .message { margin-top: 10px; font-size: 12px; color: var(--muted); }
 
+/* Modal */
+.modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); z-index: 1000; }
+.hidden { display: none; }
+.dialog { width: 520px; max-width: 95vw; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden; }
+.dialog-header { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.dialog-header h2 { margin: 0; font-size: 16px; }
+.dialog-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.form-row { display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 10px; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.center { grid-template-columns: 1fr; justify-items: center; }
+.form-row label { color: var(--muted); }
+.form-row input[type="text"], .form-row input[type="url"] { width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: #0f1113; color: var(--fg); }
+.controls { display: inline-flex; gap: 10px; align-items: center; }
+.controls.center { justify-content: center; width: 100%; }
+.dialog-actions { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border); justify-content: flex-end; }
+

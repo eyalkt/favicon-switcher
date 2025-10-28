@@ -31,6 +31,24 @@ function uiScope() {
   return document.querySelector('input[name="scope"]:checked').value;
 }
 
+function uiSource() {
+  return document.querySelector('input[name="source"]:checked').value;
+}
+
+function setSource(source) {
+  const urlRadio = document.querySelector('input[name="source"][value="url"]');
+  const rndRadio = document.querySelector(
+    'input[name="source"][value="random"]'
+  );
+  const exRadio = document.querySelector(
+    'input[name="source"][value="existing"]'
+  );
+  if (source === "url") urlRadio.checked = true;
+  else if (source === "existing") exRadio.checked = true;
+  else rndRadio.checked = true;
+  toggleSourceRows(source);
+}
+
 function toggleScope(scope, host) {
   document
     .getElementById("domainRow")
@@ -39,12 +57,27 @@ function toggleScope(scope, host) {
     .getElementById("patternRow")
     .classList.toggle("hidden", scope !== "pattern");
   if (scope === "domain") {
-    document.getElementById("domainInput").value = host || "";
+    const domainInput = document.getElementById("domainInput");
+    domainInput.value = host || "";
+    domainInput.title = domainInput.value;
   }
 }
 
-function ruleFromUi(scope, host, enabledDefault = true) {
-  const faviconUrl = document.getElementById("faviconUrlInput").value.trim();
+function toggleSourceRows(source) {
+  document
+    .getElementById("urlRow")
+    .classList.toggle("hidden", source !== "url");
+  document
+    .getElementById("randomRow")
+    .classList.toggle("hidden", source !== "random");
+  document
+    .getElementById("existingRow")
+    .classList.toggle("hidden", source !== "existing");
+}
+
+function ruleFromUi(scope, host, enabledDefault = true, overrideUrl) {
+  const faviconUrl =
+    overrideUrl ?? document.getElementById("faviconUrlInput").value.trim();
   const value =
     scope === "domain"
       ? host || ""
@@ -57,10 +90,13 @@ function ruleFromUi(scope, host, enabledDefault = true) {
   };
 }
 
-function validateRule(rule) {
+function validateRule(rule, source) {
   if (rule.type === "domain" && !rule.value) return "Missing domain";
   if (rule.type === "pattern" && !rule.value) return "Missing pattern";
-  if (!isValidFaviconUrl(rule.faviconUrl)) return "Invalid favicon URL";
+  if (source === "url" && !isValidFaviconUrl(rule.faviconUrl))
+    return "Invalid favicon URL";
+  if ((source === "random" || source === "existing") && !rule.faviconUrl)
+    return source === "random" ? "Generate a favicon first" : "Pick a favicon";
   return "";
 }
 
@@ -105,13 +141,119 @@ async function clearInTab(tabId) {
 function resetForm(host) {
   document.querySelector('input[name="scope"][value="domain"]').checked = true;
   toggleScope("domain", host);
-  document.getElementById("patternInput").value = "";
-  document.getElementById("faviconUrlInput").value = "";
+  const patternInput = document.getElementById("patternInput");
+  patternInput.value = "";
+  patternInput.title = "";
+  const urlInput = document.getElementById("faviconUrlInput");
+  urlInput.value = "";
+  urlInput.title = "";
   const enabledSwitch = document.getElementById("enabledSwitch");
   enabledSwitch.checked = false;
   enabledSwitch.disabled = true;
+  setSource("random");
+  lastGeneratedDataUrl = "";
+  selectedExisting = "";
   setPreview("");
   setMessage("");
+}
+
+// Random favicon generation (40% shape)
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function randFloat(min, max) {
+  return Math.random() * (max - min) + min;
+}
+function hsl(h, s, l) {
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
+function randomColor() {
+  return hsl(randInt(0, 359), randInt(60, 90), randInt(35, 65));
+}
+function pickContrastingColor(bgHsl) {
+  const m = /hsl\((\d+),\s*(\d+)%\,\s*(\d+)%\)/i.exec(bgHsl);
+  if (!m) return hsl(randInt(0, 359), randInt(60, 90), randInt(20, 80));
+  const h = parseInt(m[1], 10);
+  const s = Math.min(100, Math.max(50, parseInt(m[2], 10)));
+  const l = parseInt(m[3], 10);
+  const altL = l > 50 ? randInt(15, 35) : randInt(65, 85);
+  return hsl((h + randInt(90, 180)) % 360, s, altL);
+}
+function generateRandomFavicon(size = 64) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const bg = randomColor();
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, size, size);
+  const shapes = ["circle", "square", "triangle"];
+  const shape = shapes[randInt(0, shapes.length - 1)];
+  const shapeColor = pickContrastingColor(bg);
+  ctx.fillStyle = shapeColor;
+  const shapeSize = Math.round(size * 0.4);
+  const angle = randFloat(0, Math.PI * 2);
+  ctx.save();
+  ctx.translate(size / 2, size / 2);
+  ctx.rotate(angle);
+  if (shape === "circle") {
+    ctx.beginPath();
+    ctx.arc(0, 0, shapeSize / 2, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (shape === "square") {
+    ctx.fillRect(-shapeSize / 2, -shapeSize / 2, shapeSize, shapeSize);
+  } else {
+    const h = (Math.sqrt(3) / 2) * shapeSize;
+    ctx.beginPath();
+    ctx.moveTo(0, -h / 2);
+    ctx.lineTo(-shapeSize / 2, h / 2);
+    ctx.lineTo(shapeSize / 2, h / 2);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+  return canvas.toDataURL("image/png");
+}
+
+let lastGeneratedDataUrl = "";
+let selectedExisting = "";
+
+function uniqueFavicons(rules) {
+  const set = new Set();
+  const list = [];
+  for (const r of rules) {
+    if (typeof r.faviconUrl === "string" && r.faviconUrl) {
+      if (!set.has(r.faviconUrl)) {
+        set.add(r.faviconUrl);
+        list.push(r.faviconUrl);
+      }
+    }
+  }
+  return list;
+}
+
+function renderExistingGrid(faviconUrls) {
+  const grid = document.getElementById("existingGrid");
+  grid.innerHTML = "";
+  faviconUrls.forEach((url) => {
+    const item = document.createElement("div");
+    item.className =
+      "existing-item" + (selectedExisting === url ? " selected" : "");
+    const img = document.createElement("img");
+    img.src = url;
+    item.appendChild(img);
+    item.title = url;
+    item.onclick = () => {
+      selectedExisting = url;
+      setPreview(url);
+      // update selection styles
+      grid
+        .querySelectorAll(".existing-item")
+        .forEach((el) => el.classList.remove("selected"));
+      item.classList.add("selected");
+    };
+    grid.appendChild(item);
+  });
 }
 
 async function init() {
@@ -138,9 +280,43 @@ async function init() {
   });
   urlInput.title = urlInput.value || "";
 
+  const patternInput = document.getElementById("patternInput");
+  patternInput.addEventListener("input", (e) => {
+    patternInput.title = e.target.value || "";
+  });
+  patternInput.title = patternInput.value || "";
+
   document.getElementById("manageBtn").addEventListener("click", (e) => {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
+  });
+
+  // Source toggle
+  toggleSourceRows(uiSource());
+  document.querySelectorAll('input[name="source"]').forEach((r) => {
+    r.addEventListener("change", () => {
+      const source = uiSource();
+      toggleSourceRows(source);
+      if (source === "url") {
+        urlInput.value = "";
+        urlInput.title = "";
+        setPreview("");
+      } else if (source === "random") {
+        if (lastGeneratedDataUrl) setPreview(lastGeneratedDataUrl);
+      } else if (source === "existing") {
+        // ensure preview matches selected item
+        if (selectedExisting) setPreview(selectedExisting);
+        else setPreview("");
+      }
+    });
+  });
+
+  // Generate button
+  const generateBtn = document.getElementById("generateBtn");
+  generateBtn.addEventListener("click", () => {
+    lastGeneratedDataUrl = generateRandomFavicon(64);
+    setPreview(lastGeneratedDataUrl);
+    setMessage("Generated. Click Save to apply.");
   });
 
   toggleScope(uiScope(), host);
@@ -151,22 +327,42 @@ async function init() {
   let rules = await getRules();
   let existing = pickBestRule(rules, url);
 
+  // Render existing favicon choices
+  renderExistingGrid(uniqueFavicons(rules));
+
   if (existing) {
-    document.getElementById("faviconUrlInput").value =
-      existing.faviconUrl || "";
-    setPreview(existing.faviconUrl || "");
+    // Decide source by URL scheme
+    const isData =
+      typeof existing.faviconUrl === "string" &&
+      existing.faviconUrl.startsWith("data:");
+    if (isData) {
+      setSource("random");
+      lastGeneratedDataUrl = existing.faviconUrl;
+      setPreview(existing.faviconUrl || "");
+      urlInput.value = ""; // keep URL field empty when saved as random
+      urlInput.title = "";
+    } else {
+      setSource("url");
+      urlInput.value = existing.faviconUrl || "";
+      urlInput.title = urlInput.value;
+      setPreview(existing.faviconUrl || "");
+    }
+
     if (existing.type === "domain") {
       document.querySelector(
         'input[name="scope"][value="domain"]'
       ).checked = true;
       toggleScope("domain", host);
-      document.getElementById("domainInput").value = existing.value;
+      const domainInput = document.getElementById("domainInput");
+      domainInput.value = existing.value;
+      domainInput.title = domainInput.value;
     } else {
       document.querySelector(
         'input[name="scope"][value="pattern"]'
       ).checked = true;
       toggleScope("pattern", host);
-      document.getElementById("patternInput").value = existing.value;
+      patternInput.value = existing.value;
+      patternInput.title = patternInput.value;
     }
     enabledSwitch.checked = existing.enabled !== false;
     enabledSwitch.disabled = false;
@@ -175,12 +371,32 @@ async function init() {
     enabledSwitch.checked = false;
     enabledSwitch.disabled = true;
     deleteBtn.disabled = true;
+    setSource("random");
   }
 
   saveBtn.addEventListener("click", async () => {
     const scope = uiScope();
-    const rule = ruleFromUi(scope, host, enabledSwitch.checked || true);
-    const err = validateRule(rule);
+    const source = uiSource();
+    let faviconUrl =
+      source === "url"
+        ? document.getElementById("faviconUrlInput").value.trim()
+        : source === "random"
+        ? lastGeneratedDataUrl
+        : selectedExisting;
+    if (source === "random" && !faviconUrl) {
+      // auto-generate if not yet generated
+      lastGeneratedDataUrl = generateRandomFavicon(64);
+      faviconUrl = lastGeneratedDataUrl;
+      setPreview(faviconUrl);
+    }
+
+    const rule = ruleFromUi(
+      scope,
+      host,
+      enabledSwitch.checked || true,
+      faviconUrl
+    );
+    const err = validateRule(rule, source);
     if (err) return setMessage(err, true);
     if (existing) rule.id = existing.id;
     await upsertRule(rule);
